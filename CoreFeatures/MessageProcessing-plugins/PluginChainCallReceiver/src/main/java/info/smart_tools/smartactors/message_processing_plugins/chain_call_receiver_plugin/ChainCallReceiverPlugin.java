@@ -50,6 +50,8 @@ public class ChainCallReceiverPlugin implements IPlugin {
                     .after("IFieldNamePlugin")
                     .after("receiver_chains_storage")
                     .after("ChainChoiceStrategy")
+                    .after("condition_chain_choice_strategy")
+                    .after("constant_chain_choice_strategy")
                     .process(() -> {
                         try {
                             IOC.register(
