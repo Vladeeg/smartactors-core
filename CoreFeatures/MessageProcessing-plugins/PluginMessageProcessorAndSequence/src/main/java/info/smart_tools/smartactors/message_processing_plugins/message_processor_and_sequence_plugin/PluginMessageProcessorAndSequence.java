@@ -52,9 +52,20 @@ public class PluginMessageProcessorAndSequence implements IPlugin {
                             IAction<IMessageProcessingSequence> breakAction = IMessageProcessingSequence::end;
                             IAction<IMessageProcessingSequence> continueAction = (mps) -> {
                             };
-                            IAction<IMessageProcessingSequence> repeatAction = (mps) -> {
-                                // ToDo: strange code - probably must replace "currentLevel - 1" by "currentLevel"
-                                // ToDo: but then it does nothing
+                            IAction<IMessageProcessingSequence> breakChainAction = (mps) -> {
+                                int currentLevel = mps.getCurrentLevel();
+                                if (currentLevel < 2) {
+                                    mps.end();
+                                } else {
+                                    int repeatStep = mps.getStepAtLevel(currentLevel - 2);
+                                    mps.goTo(currentLevel - 2, repeatStep + 1);
+                                }
+                            };
+                            IAction<IMessageProcessingSequence> repeatChainAction = (mps) -> {
+                                int currentLevel = mps.getCurrentLevel();
+                                mps.goTo(currentLevel - 1, 0);
+                            };
+                            IAction<IMessageProcessingSequence> repeatStepAction = (mps) -> {
                                 int currentLevel = mps.getCurrentLevel();
                                 int repeatStep = mps.getStepAtLevel(currentLevel - 1);
                                 mps.goTo(currentLevel - 1, repeatStep);
@@ -68,8 +79,17 @@ public class PluginMessageProcessorAndSequence implements IPlugin {
                                     new SingletonStrategy(continueAction)
                             );
                             IOC.register(
-                                    IOC.resolve(IOC.getKeyForKeyByNameStrategy(), "afterExceptionAction#repeat"),
-                                    new SingletonStrategy(repeatAction)
+                                    IOC.resolve(IOC.getKeyForKeyByNameStrategy(), "afterExceptionAction#breakChain"),
+                                    new SingletonStrategy(breakChainAction)
+                            );
+                            IOC.register(
+                                    IOC.resolve(IOC.getKeyForKeyByNameStrategy(), "afterExceptionAction#repeatStep"),
+                                    new SingletonStrategy(repeatStepAction)
+                            );
+
+                            IOC.register(
+                                    IOC.resolve(IOC.getKeyForKeyByNameStrategy(), "afterExceptionAction#repeatChain"),
+                                    new SingletonStrategy(repeatChainAction)
                             );
                         } catch (ResolutionException e) {
                             throw new ActionExecutionException("MessageProcessorAndSequence plugin can't load: can't get AfterExceptionAction key", e);
@@ -83,7 +103,9 @@ public class PluginMessageProcessorAndSequence implements IPlugin {
                         String[] keyNames = {
                                 "afterExceptionAction#break",
                                 "afterExceptionAction#continue",
-                                "afterExceptionAction#repeat"
+                                "afterExceptionAction#breakChain",
+                                "afterExceptionAction#repeatStep",
+                                "afterExceptionAction#repeatChain"
                         };
                         Keys.unregisterByNames(keyNames);
                     });

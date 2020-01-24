@@ -220,12 +220,14 @@ public class MessageProcessingSequence implements IMessageProcessingSequence, ID
 
     @Override
     public boolean next() {
-        while (stackIndex >= 0) {
-            int step = ++stepStack[stackIndex];
-            currentReceiver = chainStack[stackIndex].get(step);
+        int tempStackIndex = stackIndex;
+        while (tempStackIndex >= 0) {
+            int step = ++stepStack[tempStackIndex];
+            currentReceiver = chainStack[tempStackIndex].get(step);
 
             if (null != currentReceiver) {
-                currentArguments = chainStack[stackIndex].getArguments(step);
+                currentArguments = chainStack[tempStackIndex].getArguments(step);
+                stackIndex = tempStackIndex;
                 return true;
             }
 
@@ -235,6 +237,7 @@ public class MessageProcessingSequence implements IMessageProcessingSequence, ID
                     this.afterExceptionAction.execute(this);
                 } catch (Throwable e) {
                     ModuleManager.setCurrentModule(moduleStack[0]);
+                    stackIndex = tempStackIndex;
                     try {
                         ScopeProvider.setCurrentScope(scopeStack[0]);
                     } catch (ScopeProviderException e1) {
@@ -245,15 +248,16 @@ public class MessageProcessingSequence implements IMessageProcessingSequence, ID
             }
 
             if(scopeSwitchingStack[stackIndex]) {
-                ModuleManager.setCurrentModule(moduleStack[stackIndex]);
+                ModuleManager.setCurrentModule(moduleStack[tempStackIndex]);
                 try {
-                    ScopeProvider.setCurrentScope(scopeStack[stackIndex]);
+                    ScopeProvider.setCurrentScope(scopeStack[tempStackIndex]);
                 } catch (ScopeProviderException e) {
+                    stackIndex = tempStackIndex;
                     throw new RuntimeException(e);
                 }
             }
 
-            --stackIndex;
+            --tempStackIndex;
         }
 
         stackIndex = 0;
