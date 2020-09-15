@@ -235,6 +235,7 @@ public class HttpRequestMakerTest {
 
         List<IObject> expectedHeaders = new ArrayList<>(requestHeaders);
         expectedHeaders.addAll(this.getRequiredCommonHeaders());
+        expectedHeaders.add(createKeyValue(HttpHeaderNames.CONTENT_LENGTH.toString(), 0));
 
         for (IObject header: expectedHeaders) {
             String expectedValue = header.getValue(valueFN).toString();

@@ -353,6 +353,11 @@ public class HttpRequestMaker implements IRequestMaker<FullHttpRequest> {
                         HttpHeaderNames.CONTENT_TYPE,
                         "application/json"
                 );
+            } else {
+                httpRequest.headers().set(
+                        HttpHeaderNames.CONTENT_LENGTH,
+                        0
+                );
             }
             httpRequest.headers().set(
                     HttpHeaderNames.HOST,
