@@ -137,7 +137,7 @@ public class HttpRequestMakerTest {
 
         assertEquals(
                 "Invalid request URI",
-                EMPTY_PATH,
+                this.uri.toURL().getFile(),
                 httpRequest.uri()
         );
 
@@ -229,7 +229,7 @@ public class HttpRequestMakerTest {
 
         assertEquals(
                 "Invalid request URI",
-                EMPTY_PATH,
+                this.uri.toURL().getFile(),
                 httpRequest.uri()
         );
 
@@ -282,7 +282,7 @@ public class HttpRequestMakerTest {
 
         assertEquals(
                 "Invalid request URI",
-                EMPTY_PATH,
+                this.uri.toURL().getFile(),
                 httpRequest.uri()
         );
 
@@ -335,7 +335,7 @@ public class HttpRequestMakerTest {
 
         assertEquals(
                 "Invalid request URI",
-                EMPTY_PATH,
+                this.uri.toURL().getFile(),
                 httpRequest.uri()
         );
 

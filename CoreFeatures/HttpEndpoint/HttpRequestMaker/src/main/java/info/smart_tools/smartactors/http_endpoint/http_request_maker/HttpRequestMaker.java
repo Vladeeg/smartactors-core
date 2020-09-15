@@ -322,7 +322,7 @@ public class HttpRequestMaker implements IRequestMaker<FullHttpRequest> {
     ) throws RequestMakerException {
         try {
             FullHttpRequest httpRequest;
-            String path = url.getPath();
+            String path = url.getFile();
 
             if (content == null){
                 httpRequest = new DefaultFullHttpRequest(
