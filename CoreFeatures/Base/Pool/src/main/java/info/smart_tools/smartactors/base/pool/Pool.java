@@ -11,6 +11,7 @@ import info.smart_tools.smartactors.base.interfaces.iresource_source.exceptions.
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 
@@ -27,6 +28,11 @@ public class Pool implements IPool {
      * Local function for creation new instances of items
      */
     private Supplier<Object> creationFunction;
+
+    /**
+     * Local function for validation of existing items
+     */
+    private Predicate<Object> validationFunction;
 
     /**
      * Constructs new Pool
@@ -46,6 +52,17 @@ public class Pool implements IPool {
         this.creationFunction = func;
     }
 
+/**
+     * Constructs new Pool with validation function
+     * @param maxItems the maximum of active items.
+     * @param func the function for creating new instances of items
+     * @param validationFunction the function for validating existing items
+     */
+    public Pool(final Integer maxItems, final Supplier<Object> func, final Predicate<Object> validationFunction) {
+        this(maxItems, func);
+        this.validationFunction = validationFunction;
+    }
+
     /**
      * Get a value by the key from the scope.
      * @throws GettingFromPoolException if error was occurred
@@ -63,7 +80,7 @@ public class Pool implements IPool {
 
         try {
             Object result = freeItems.poll();
-            if (result == null) {
+            if (result == null || !validateItem(result)) {
                 result = creationFunction.get();
             }
 
@@ -109,5 +126,12 @@ public class Pool implements IPool {
         } catch (ActionExecutionException e) {
             throw new RuntimeException("Failed to execute ActionNoArgs", e);
         }
+    }
+
+    private boolean validateItem(Object item) {
+        if (validationFunction == null) {
+            return true;
+        }
+        return validationFunction.test(item);
     }
 }
