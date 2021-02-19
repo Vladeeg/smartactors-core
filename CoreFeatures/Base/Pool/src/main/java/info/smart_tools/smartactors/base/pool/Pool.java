@@ -50,6 +50,7 @@ public class Pool implements IPool {
         this.freeItems = new ArrayBlockingQueue<>(maxItems);
         this.freeItemsCounter.set(maxItems);
         this.creationFunction = func;
+        this.validationFunction = (item) -> true;
     }
 
 /**
@@ -60,7 +61,9 @@ public class Pool implements IPool {
      */
     public Pool(final Integer maxItems, final Supplier<Object> func, final Predicate<Object> validationFunction) {
         this(maxItems, func);
-        this.validationFunction = validationFunction;
+        if (validationFunction != null) {
+            this.validationFunction = validationFunction;
+        }
     }
 
     /**
@@ -80,7 +83,7 @@ public class Pool implements IPool {
 
         try {
             Object result = freeItems.poll();
-            if (result == null || !validateItem(result)) {
+            if (result == null || !validationFunction.test(result)) {
                 result = creationFunction.get();
             }
 
@@ -126,12 +129,5 @@ public class Pool implements IPool {
         } catch (ActionExecutionException e) {
             throw new RuntimeException("Failed to execute ActionNoArgs", e);
         }
-    }
-
-    private boolean validateItem(Object item) {
-        if (validationFunction == null) {
-            return true;
-        }
-        return validationFunction.test(item);
     }
 }
